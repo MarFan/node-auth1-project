@@ -20,7 +20,7 @@ function findUser(id) {
 }
 
 function findUserBy(filter) {
-    return db('users').select('id','username','password').where(filter).first();
+    return db('users').select('id','username','password').where(filter);
 }
 
 function addUser(user) {

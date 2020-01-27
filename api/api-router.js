@@ -39,21 +39,12 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
     let {username, password} = req.body;
-    Users.findUserBy({username})
+    Users.findUserBy({username}).first()
     .then(user => {
-        if(user) {
-            bcrypt.compare(password, user.password)
-            .then(success => {
-                if(success){
-                    Users.find()
-                    .then(list => res.status(200).json(list))
-                    .catch(err => res.status(401).json({ message: 'YOU SHALL NOT PASS!!!'}))
-                }else{
-                    res.status(401).json({ message: 'YOU SHALL NOT PASS!!!'})
-                }
-            })
-            .catch(err => res.status(401).json({ message: 'YOU SHALL NOT PASS!'}))
-            
+        if(user && bcrypt.compareSync(password, user.password)) {
+            Users.find()
+            .then(list => res.status(200).json(list))
+            .catch(err => res.status(401).json({ message: 'YOU SHALL NOT PASS!!!'}))
         } else {
             res.status(401).json({ message: 'Invalid Credentials.'})
         }
