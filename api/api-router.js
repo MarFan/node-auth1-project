@@ -35,10 +35,12 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
     let {username, password} = req.body;
+
     Users.findUserBy({username})
     .first()
     .then(user => {
         if(user && bcrypt.compareSync(password, user.password)) {
+            req.session.user = user;
             Users.find()
             .then(list => res.status(200).json(list))
             .catch(err => res.status(403).json({ message: 'YOU SHALL NOT PASS!!!'}))
