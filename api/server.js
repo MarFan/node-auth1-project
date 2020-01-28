@@ -1,7 +1,12 @@
 const express = require('express');
 const session = require('express-session')
-// Routers
-const apiRouter = require('./api-router');
+const KnexSessionStore = require('connect-session-knex')(session);
+
+const db = require('../data/dbConfig')
+
+const authRouter = require('../auth/auth-router');
+const userRouter = require('../users/users-router');
+const restrictedRouter = require('../restricted/restricted-router');
 // middleware
 const configMiddleware = require('./configure-middleware');
 
@@ -16,12 +21,24 @@ const sessionConfig = {
         httpOnly: true
     },
     resave: false,
-    saveUninitialized: false // GDPR laws again setting cookies automatically    
+    saveUninitialized: false, // GDPR laws again setting cookies automatically
+    store: new KnexSessionStore({
+        knex: db,
+        tablename: 'sessions',
+        sidfieldname: 'sid',
+        createtable: true,
+        clearInterval: 1000 * 60 * 10
+    })
 };
 
 configMiddleware(server);
 server.use(session(sessionConfig))
+server.use('/api/auth', authRouter);
+server.use('/api/users', userRouter);
+server.use('/api/restricted', restrictedRouter)
 
-server.use('/api', apiRouter);
+server.get('/', (req, res) => {
+    res.json({ api: "It's alive!"})
+});
 
 module.exports = server;
